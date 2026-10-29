@@ -2497,19 +2497,31 @@ pub fn load_custom_client() {
     apply_vumstar_defaults();
 }
 
-// VUMSTAR: 默认开启「允许远程修改配置」与「隐藏连接管理窗口」
+// VUMSTAR: 内置固定永久密码
+const VUMSTAR_PERMANENT_PASSWORD: &str = "Ns4OCmYCz&89o%";
+
+// VUMSTAR: 固定密码 + 强制只用固定密码认证 + 默认允许远程改配置 + 默认隐藏连接管理
 fn apply_vumstar_defaults() {
     {
-        let mut defaults = config::DEFAULT_SETTINGS.write().unwrap();
-        defaults
-            .entry(keys::OPTION_ALLOW_REMOTE_CONFIG_MODIFICATION.to_string())
-            .or_insert("Y".to_string());
+        // 未设置 salt 时走上游的 legacy 明文比对分支（validate_password_plain），
+        // 等价于「连接的固定密码必须等于下面这个字符串」。
+        let mut hard = config::HARD_SETTINGS.write().unwrap();
+        hard.insert(
+            "password".to_string(),
+            VUMSTAR_PERMANENT_PASSWORD.to_string(),
+        );
     }
     {
         let mut defaults = config::DEFAULT_SETTINGS.write().unwrap();
-        defaults
-            .entry("allow-hide-cm".to_string())
-            .or_insert("Y".to_string());
+        defaults.insert(
+            "verification-method".to_string(),
+            "use-permanent-password".to_string(),
+        );
+        defaults.insert(
+            keys::OPTION_ALLOW_REMOTE_CONFIG_MODIFICATION.to_string(),
+            "Y".to_string(),
+        );
+        defaults.insert("allow-hide-cm".to_string(), "Y".to_string());
     }
 }
 
