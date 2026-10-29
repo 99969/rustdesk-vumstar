@@ -1294,7 +1294,7 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://admin.rustdesk.com".to_owned()
+    "https://rd.xiguan.net".to_owned()
 }
 
 #[inline]
@@ -2493,6 +2493,27 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 }
 
 pub fn load_custom_client() {
+    load_custom_client_inner();
+    apply_vumstar_defaults();
+}
+
+// VUMSTAR: 默认开启「允许远程修改配置」与「隐藏连接管理窗口」
+fn apply_vumstar_defaults() {
+    {
+        let mut defaults = config::DEFAULT_SETTINGS.write().unwrap();
+        defaults
+            .entry(keys::OPTION_ALLOW_REMOTE_CONFIG_MODIFICATION.to_string())
+            .or_insert("Y".to_string());
+    }
+    {
+        let mut defaults = config::DEFAULT_SETTINGS.write().unwrap();
+        defaults
+            .entry("allow-hide-cm".to_string())
+            .or_insert("Y".to_string());
+    }
+}
+
+fn load_custom_client_inner() {
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
